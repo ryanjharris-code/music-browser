@@ -15,10 +15,14 @@ let allMusic = [];
 fetch(SHEET_URL)
   .then(res => res.text())
   .then(csvText => {
-    const parsed = Papa.parse(csvText, { header: true });
-    allMusic = parsed.data;
+    const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+    allMusic = parsed.data.filter(row => row.Artist && row.Genre); // skip malformed
     populateFilters();
     renderList();
+  })
+  .catch(error => {
+    musicList.innerHTML = 'Failed to load music data. Check console for details.';
+    console.error('Error loading CSV:', error);
   });
 
 function populateFilters() {
@@ -27,14 +31,14 @@ function populateFilters() {
   const eras = new Set();
   const types = new Set();
   allMusic.forEach(item => {
-    genres.add(item.Genre);
-    artists.add(item.Artist);
-    eras.add(item.Era);
-    types.add(item.Type);
+    if (item.Genre) genres.add(item.Genre.trim());
+    if (item.Artist) artists.add(item.Artist.trim());
+    if (item.Era) eras.add(item.Era.trim());
+    if (item.Type) types.add(item.Type.trim());
   });
   [[genreFilter, genres], [artistFilter, artists], [eraFilter, eras], [typeFilter, types]]
     .forEach(([filter, set]) => {
-      set.forEach(val => {
+      Array.from(set).sort().forEach(val => {
         const option = document.createElement('option');
         option.value = val;
         option.textContent = val;
@@ -55,15 +59,20 @@ function renderList() {
            (!artist || item.Artist === artist) &&
            (!era || item.Era === era) &&
            (!type || item.Type === type) &&
-           (!search || Object.values(item).some(v => v.toLowerCase().includes(search)));
+           (!search || Object.values(item).some(v => v && v.toLowerCase().includes(search)));
   });
 
   musicList.innerHTML = '';
+  if (filtered.length === 0) {
+    musicList.innerHTML = '<p>No results found.</p>';
+    return;
+  }
+
   filtered.forEach(item => {
     const div = document.createElement('div');
     div.className = 'music-item';
-    div.innerHTML = `<strong>${item.Artist}</strong> — ${item.Type}<br/>
-                     <em>${item.Genre}, ${item.Era}</em><br/>
+    div.innerHTML = `<strong>${item.Artist || ''}</strong> — ${item.Type || ''}<br/>
+                     <em>${item.Genre || ''}, ${item.Era || ''}</em><br/>
                      ${item.Notes || ''}<br/>
                      ${item.Link ? `<a href="${item.Link}" target="_blank"><button>🎵 Open in YouTube Music</button></a>` : ''}`;
     musicList.appendChild(div);
