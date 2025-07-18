@@ -16,7 +16,7 @@ fetch(SHEET_URL)
   .then(res => res.text())
   .then(csvText => {
     const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-    allMusic = parsed.data.filter(row => row.Artist && row.Genre); // skip malformed
+    allMusic = parsed.data.filter(row => row.Artist && row.Genre);
     populateFilters();
     renderList();
   })
