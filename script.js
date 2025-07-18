@@ -14,10 +14,9 @@ let allMusic = [];
 
 fetch(SHEET_URL)
   .then(res => res.text())
-  .then(data => {
-    const rows = data.split('\n').map(row => row.split(','));
-    const headers = rows.shift();
-    allMusic = rows.map(row => Object.fromEntries(row.map((val, i) => [headers[i], val])));
+  .then(csvText => {
+    const parsed = Papa.parse(csvText, { header: true });
+    allMusic = parsed.data;
     populateFilters();
     renderList();
   });
@@ -33,7 +32,7 @@ function populateFilters() {
     eras.add(item.Era);
     types.add(item.Type);
   });
-  [genreFilter, genres], [artistFilter, artists], [eraFilter, eras], [typeFilter, types]
+  [[genreFilter, genres], [artistFilter, artists], [eraFilter, eras], [typeFilter, types]]
     .forEach(([filter, set]) => {
       set.forEach(val => {
         const option = document.createElement('option');
