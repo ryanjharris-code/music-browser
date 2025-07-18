@@ -1,0 +1,27 @@
+
+body {
+  font-family: sans-serif;
+  margin: 20px;
+}
+h1 {
+  text-align: center;
+}
+#search {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+#filters select {
+  margin: 5px;
+  padding: 5px;
+}
+#musicList {
+  margin-top: 20px;
+}
+.music-item {
+  border-bottom: 1px solid #ccc;
+  padding: 10px 0;
+}
+.music-item button {
+  margin-top: 5px;
+}
