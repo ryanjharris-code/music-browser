@@ -1,6 +1,7 @@
 
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMB7ETULjxnJTJe45uh10DDfHYKLQAU_vlAixk3NA00blLcmn4vkPvcm1whCbV57lSpF_TkFyQOAKg/pub?gid=1000284919&single=true&output=csv';
-const SHEET_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://docs.google.com/spreadsheets/d/e/2PACX-1vTMB7ETULjxnJTJe45uh10DDfHYKLQAU_vlAixk3NA00blLcmn4vkPvcm1whCbV57lSpF_TkFyQOAKg/pub?gid=1000284919&single=true&output=csv');
+const SHEET_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMB7ETULjxnJTJe45uh10DDfHYKLQAU_vlAixk3NA00blLcmn4vkPvcm1whCbV57lSpF_TkFyQOAKg/pub?gid=1000284919&single=true&output=csv'
+);
 
 const musicList = document.getElementById('musicList');
 const searchInput = document.getElementById('search');
