@@ -1,14 +1,13 @@
 
 const SHEET_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMB7ETULjxnJTJe45uh10DDfHYKLQAU_vlAixk3NA00blLcmn4vkPvcm1whCbV57lSpF_TkFyQOAKg/pub?gid=1000284919&single=true&output=csv'
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMB7ETULjxnJTJe45uh10DDfHYKLQAU_vlAixk3NA00blLcmn4vkPvcm1whCbV57lSpF_TkFyQOAKg/pub?output=csv'
 );
 
-const musicList = document.getElementById('musicList');
-const searchInput = document.getElementById('search');
 const genreFilter = document.getElementById('genreFilter');
-const artistFilter = document.getElementById('artistFilter');
-const eraFilter = document.getElementById('eraFilter');
-const typeFilter = document.getElementById('typeFilter');
+const subgenreFilter = document.getElementById('subgenreFilter');
+const subgenre2Filter = document.getElementById('subgenre2Filter');
+const bandFilter = document.getElementById('bandFilter');
+const musicList = document.getElementById('musicList');
 
 let allMusic = [];
 
@@ -16,54 +15,52 @@ fetch(SHEET_URL)
   .then(res => res.text())
   .then(csvText => {
     const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-    allMusic = parsed.data.filter(row => row.Artist && row.Genre);
+    allMusic = parsed.data.filter(row => row.Genre && row.Band);
     populateFilters();
     renderList();
   })
   .catch(error => {
-    musicList.innerHTML = 'Failed to load music data. Check console for details.';
-    console.error('Error loading CSV:', error);
+    musicList.innerHTML = 'Failed to load music data.';
+    console.error('CSV load error:', error);
   });
 
 function populateFilters() {
   const genres = new Set();
-  const artists = new Set();
-  const eras = new Set();
-  const types = new Set();
+  const subgenres = new Set();
+  const subgenre2s = new Set();
+  const bands = new Set();
   allMusic.forEach(item => {
-    if (item.Genre) genres.add(item.Genre.trim());
-    if (item.Artist) artists.add(item.Artist.trim());
-    if (item.Era) eras.add(item.Era.trim());
-    if (item.Type) types.add(item.Type.trim());
+    genres.add(item.Genre);
+    if (item.Subgenre) subgenres.add(item.Subgenre);
+    if (item.Subgenre2) subgenre2s.add(item.Subgenre2);
+    bands.add(item.Band);
   });
-  [[genreFilter, genres], [artistFilter, artists], [eraFilter, eras], [typeFilter, types]]
-    .forEach(([filter, set]) => {
-      Array.from(set).sort().forEach(val => {
-        const option = document.createElement('option');
-        option.value = val;
-        option.textContent = val;
-        filter.appendChild(option);
+  [[genreFilter, genres], [subgenreFilter, subgenres], [subgenre2Filter, subgenre2s], [bandFilter, bands]]
+    .forEach(([filter, values]) => {
+      [...values].sort().forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        filter.appendChild(opt);
       });
     });
 }
 
 function renderList() {
-  const search = searchInput.value.toLowerCase();
   const genre = genreFilter.value;
-  const artist = artistFilter.value;
-  const era = eraFilter.value;
-  const type = typeFilter.value;
+  const subgenre = subgenreFilter.value;
+  const subgenre2 = subgenre2Filter.value;
+  const band = bandFilter.value;
 
   const filtered = allMusic.filter(item => {
     return (!genre || item.Genre === genre) &&
-           (!artist || item.Artist === artist) &&
-           (!era || item.Era === era) &&
-           (!type || item.Type === type) &&
-           (!search || Object.values(item).some(v => v && v.toLowerCase().includes(search)));
+           (!subgenre || item.Subgenre === subgenre) &&
+           (!subgenre2 || item.Subgenre2 === subgenre2) &&
+           (!band || item.Band === band);
   });
 
   musicList.innerHTML = '';
-  if (filtered.length === 0) {
+  if (!filtered.length) {
     musicList.innerHTML = '<p>No results found.</p>';
     return;
   }
@@ -71,14 +68,15 @@ function renderList() {
   filtered.forEach(item => {
     const div = document.createElement('div');
     div.className = 'music-item';
-    div.innerHTML = `<strong>${item.Artist || ''}</strong> — ${item.Type || ''}<br/>
-                     <em>${item.Genre || ''}, ${item.Era || ''}</em><br/>
-                     ${item.Notes || ''}<br/>
-                     ${item.Link ? `<a href="${item.Link}" target="_blank"><button>🎵 Open in YouTube Music</button></a>` : ''}`;
+    div.innerHTML = `<strong>${item.Band}</strong><br/>
+                     <em>${item.Album || ''}</em><br/>
+                     ${item.Genre || ''} > ${item.Subgenre || ''} > ${item.Subgenre2 || ''}<br/>
+                     ${item['BAND-LINK'] ? `<a href="${item['BAND-LINK']}" target="_blank"><button>🎧 Band</button></a>` : ''}
+                     ${item['BAND+ALBUM-LINK'] ? `<a href="${item['BAND+ALBUM-LINK']}" target="_blank"><button>💿 Album</button></a>` : ''}`;
     musicList.appendChild(div);
   });
 }
 
-[searchInput, genreFilter, artistFilter, eraFilter, typeFilter].forEach(el => {
-  el.addEventListener('input', renderList);
+[genreFilter, subgenreFilter, subgenre2Filter, bandFilter].forEach(filter => {
+  filter.addEventListener('input', renderList);
 });
