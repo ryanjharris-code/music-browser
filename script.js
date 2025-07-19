@@ -15,11 +15,7 @@ fetch(SHEET_URL)
   .then(res => res.text())
   .then(csvText => {
     const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-    allMusic = parsed.data.filter(row => row.Genre && row.Band);
-      console.log("Loaded rows:", allMusic.length);
-      console.log("Sample row:", allMusic[0]);
-      console.log("Unique Genres:", [...new Set(allMusic.map(r => r.Genre))]);
-      console.log("Unique Bands:", [...new Set(allMusic.map(r => r.Band))]); 
+    allMusic = parsed.data.filter(row => row.genre && row.band);
     populateFilters();
     renderList();
   })
@@ -34,10 +30,10 @@ function populateFilters() {
   const subgenre2s = new Set();
   const bands = new Set();
   allMusic.forEach(item => {
-    genres.add(item.Genre);
-    if (item.Subgenre) subgenres.add(item.Subgenre);
-    if (item.Subgenre2) subgenre2s.add(item.Subgenre2);
-    bands.add(item.Band);
+    genres.add(item.genre);
+    if (item.subgenre) subgenres.add(item.subgenre);
+    if (item.subgenre2) subgenre2s.add(item.subgenre2);
+    bands.add(item.band);
   });
   [[genreFilter, genres], [subgenreFilter, subgenres], [subgenre2Filter, subgenre2s], [bandFilter, bands]]
     .forEach(([filter, values]) => {
@@ -57,10 +53,10 @@ function renderList() {
   const band = bandFilter.value;
 
   const filtered = allMusic.filter(item => {
-    return (!genre || item.Genre === genre) &&
-           (!subgenre || item.Subgenre === subgenre) &&
-           (!subgenre2 || item.Subgenre2 === subgenre2) &&
-           (!band || item.Band === band);
+    return (!genre || item.genre === genre) &&
+           (!subgenre || item.subgenre === subgenre) &&
+           (!subgenre2 || item.subgenre2 === subgenre2) &&
+           (!band || item.band === band);
   });
 
   musicList.innerHTML = '';
@@ -72,15 +68,17 @@ function renderList() {
   filtered.forEach(item => {
     const div = document.createElement('div');
     div.className = 'music-item';
-    div.innerHTML = `<strong>${item.Band}</strong><br/>
-                     <em>${item.Album || ''}</em><br/>
-                     ${item.Genre || ''} > ${item.Subgenre || ''} > ${item.Subgenre2 || ''}<br/>
-                     ${item['BAND-LINK'] ? `<a href="${item['BAND-LINK']}" target="_blank"><button>🎧 Band</button></a>` : ''}
-                     ${item['BAND+ALBUM-LINK'] ? `<a href="${item['BAND+ALBUM-LINK']}" target="_blank"><button>💿 Album</button></a>` : ''}`;
+    div.innerHTML = `<strong>${item.band}</strong><br/>
+                     <em>${item.album || ''}</em><br/>
+                     ${item.genre || ''} > ${item.subgenre || ''} > ${item.subgenre2 || ''}<br/>
+                     ${item.bandlink ? `<a href="${item.bandlink}" target="_blank"><button>🎧 Band</button></a>` : ''}
+                     ${item.bandalbumlink ? `<a href="${item.bandalbumlink}" target="_blank"><button>💿 Album</button></a>` : ''}`;
     musicList.appendChild(div);
   });
 }
 
 [genreFilter, subgenreFilter, subgenre2Filter, bandFilter].forEach(filter => {
-  filter.addEventListener('input', renderList);
+  if (filter) {
+    filter.addEventListener('input', renderList);
+  }
 });
