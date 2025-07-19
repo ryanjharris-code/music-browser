@@ -16,6 +16,10 @@ fetch(SHEET_URL)
   .then(csvText => {
     const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
     allMusic = parsed.data.filter(row => row.Genre && row.Band);
+      console.log("Loaded rows:", allMusic.length);
+      console.log("Sample row:", allMusic[0]);
+      console.log("Unique Genres:", [...new Set(allMusic.map(r => r.Genre))]);
+      console.log("Unique Bands:", [...new Set(allMusic.map(r => r.Band))]); 
     populateFilters();
     renderList();
   })
