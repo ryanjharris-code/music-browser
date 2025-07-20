@@ -9,14 +9,12 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
-  <h1>🎵 Music Browser</h1>
-  <div id="filters">
-    <select id="genreFilter"><option value="">Genre</option></select>
-    <select id="subgenreFilter"><option value="">Subgenre</option></select>
-    <select id="subgenre2Filter"><option value="">Subgenre2</option></select>
-    <select id="bandFilter"><option value="">Band</option></select>
+  <a href="#" id="backHome" style="display:none;">← Back to Home</a>
+  <h1 id="pageTitle">🎵 Select a Genre</h1>
+  <div id="filters" style="display:none;">
+    <select id="subgenreFilter"><option value="">All Subgenres</option></select>
   </div>
-  <div id="musicList">Loading...</div>
+  <div id="content">Loading...</div>
   <script src="script.js"></script>
 </body>
 </html>

@@ -1,85 +1,100 @@
 
-const SHEET_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://docs.google.com/spreadsheets/d/e/2PACX-1vRrt5k7B5QqOuOrsWrIccUCn0dDRk7ac2nk-zyu9H8wycjdxA5LJMkV-hIkaLmRoB5x2roGxIStyl-1/pub?output=csv');
- 'https://api.allorigins.win/raw?url=' + encodeURIComponent(
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMB7ETULjxnJTJe45uh10DDfHYKLQAU_vlAixk3NA00blLcmn4vkPvcm1whCbV57lSpF_TkFyQOAKg/pub?output=csv'
+const SHEET_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRrt5k7B5QqOuOrsWrIccUCn0dDRk7ac2nk-zyu9H8wycjdxA5LJMkV-hIkaLmRoB5x2roGxIStyl-1/pub?output=csv'
 );
 
-const genreFilter = document.getElementById('genreFilter');
-const subgenreFilter = document.getElementById('subgenreFilter');
-const subgenre2Filter = document.getElementById('subgenre2Filter');
-const bandFilter = document.getElementById('bandFilter');
-const musicList = document.getElementById('musicList');
-
 let allMusic = [];
+let currentGenre = null;
+
+const content = document.getElementById("content");
+const subgenreFilter = document.getElementById("subgenreFilter");
+const pageTitle = document.getElementById("pageTitle");
+const backHome = document.getElementById("backHome");
+const filters = document.getElementById("filters");
 
 fetch(SHEET_URL)
   .then(res => res.text())
   .then(csvText => {
     const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
     allMusic = parsed.data.filter(row => row.genre && row.band);
-    populateFilters();
-    renderList();
-  })
-  .catch(error => {
-    musicList.innerHTML = 'Failed to load music data.';
-    console.error('CSV load error:', error);
+    route();
   });
 
-function populateFilters() {
-  const genres = new Set();
-  const subgenres = new Set();
-  const subgenre2s = new Set();
-  const bands = new Set();
-  allMusic.forEach(item => {
-    genres.add(item.genre);
-    if (item.subgenre) subgenres.add(item.subgenre);
-    if (item.subgenre2) subgenre2s.add(item.subgenre2);
-    bands.add(item.band);
-  });
-  [[genreFilter, genres], [subgenreFilter, subgenres], [subgenre2Filter, subgenre2s], [bandFilter, bands]]
-    .forEach(([filter, values]) => {
-      [...values].sort().forEach(val => {
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = val;
-        filter.appendChild(opt);
-      });
-    });
+function route() {
+  const hash = window.location.hash;
+  if (hash.startsWith("#genre=")) {
+    currentGenre = decodeURIComponent(hash.split("=")[1]);
+    showGenrePage(currentGenre);
+  } else {
+    showHomePage();
+  }
 }
 
-function renderList() {
-  const genre = genreFilter.value;
-  const subgenre = subgenreFilter.value;
-  const subgenre2 = subgenre2Filter.value;
-  const band = bandFilter.value;
+function showHomePage() {
+  pageTitle.textContent = "🎵 Select a Genre";
+  backHome.style.display = "none";
+  filters.style.display = "none";
+  content.innerHTML = "";
 
-  const filtered = allMusic.filter(item => {
-    return (!genre || item.genre === genre) &&
-           (!subgenre || item.subgenre === subgenre) &&
-           (!subgenre2 || item.subgenre2 === subgenre2) &&
-           (!band || item.band === band);
+  const genres = [...new Set(allMusic.map(m => m.genre))].sort();
+  genres.forEach(genre => {
+    const btn = document.createElement("button");
+    btn.className = "genre-button";
+    btn.textContent = genre;
+    btn.onclick = () => {
+      window.location.hash = `#genre=${encodeURIComponent(genre)}`;
+    };
+    content.appendChild(btn);
+  });
+}
+
+function showGenrePage(genre) {
+  pageTitle.textContent = `🎶 ${genre}`;
+  backHome.style.display = "inline-block";
+  filters.style.display = "block";
+
+  const music = allMusic.filter(m => m.genre === genre);
+  const subgenres = [...new Set(music.map(m => m.subgenre).filter(Boolean))].sort();
+
+  subgenreFilter.innerHTML = '<option value="">All Subgenres</option>';
+  subgenres.forEach(sg => {
+    const opt = document.createElement("option");
+    opt.value = sg;
+    opt.textContent = sg;
+    subgenreFilter.appendChild(opt);
   });
 
-  musicList.innerHTML = '';
-  if (!filtered.length) {
-    musicList.innerHTML = '<p>No results found.</p>';
+  subgenreFilter.onchange = () => {
+    renderMusicCards(genre, subgenreFilter.value);
+  };
+
+  renderMusicCards(genre, "");
+}
+
+function renderMusicCards(genre, subgenre) {
+  const music = allMusic.filter(m =>
+    m.genre === genre &&
+    (!subgenre || m.subgenre === subgenre)
+  );
+
+  content.innerHTML = "";
+  if (!music.length) {
+    content.innerHTML = "<p>No results found.</p>";
     return;
   }
 
-  filtered.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'music-item';
-    div.innerHTML = `<strong>${item.band}</strong><br/>
-                     <em>${item.album || ''}</em><br/>
-                     ${item.genre || ''} > ${item.subgenre || ''} > ${item.subgenre2 || ''}<br/>
-                     ${item.bandlink ? `<a href="${item.bandlink}" target="_blank"><button>🎧 Band</button></a>` : ''}
-                     ${item.bandalbumlink ? `<a href="${item.bandalbumlink}" target="_blank"><button>💿 Album</button></a>` : ''}`;
-    musicList.appendChild(div);
+  music.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "music-card";
+    card.innerHTML = `
+      <h3>${item.band}</h3>
+      <p><strong>Album:</strong> ${item.album || ''}</p>
+      <p><strong>Year:</strong> ${item.year || ''}</p>
+      <p><strong>Era:</strong> ${item.era || ''}</p>
+      <p><strong>Tag:</strong> ${item.tag || ''}</p>
+    `;
+    content.appendChild(card);
   });
 }
 
-[genreFilter, subgenreFilter, subgenre2Filter, bandFilter].forEach(filter => {
-  if (filter) {
-    filter.addEventListener('input', renderList);
-  }
-});
+window.addEventListener("hashchange", route);
