@@ -86,9 +86,13 @@ function renderMusicCards(genre, subgenre) {
   music.forEach(item => {
     const card = document.createElement("div");
     card.className = "music-card";
+
+    const bandLink = item.bandlink ? `<a href="${item.bandlink}" target="_blank" style="color:#90caf9;">${item.band}</a>` : item.band;
+    const albumLink = item.bandalbumlink ? `<a href="${item.bandalbumlink}" target="_blank" style="color:#ffcc80;">${item.album}</a>` : item.album;
+
     card.innerHTML = `
-      <h3><a href="${item.bandlink}" target="_blank" style="color:#90caf9;">${item.band}</a></h3>
-      <p><strong>Album:</strong> <a href="${item.bandalbumlink}" target="_blank" style="color:#ffcc80;">${item.album || ''}</a></p>
+      <h3>${bandLink}</h3>
+      <p><strong>Album:</strong> ${albumLink || ''}</p>
       <p><strong>Year:</strong> ${item.year || ''}</p>
       <p><strong>Era:</strong> ${item.era || ''}</p>
       <p><strong>Tag:</strong> ${item.tag || ''}</p>
