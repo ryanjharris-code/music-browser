@@ -35,8 +35,11 @@ async function loadCSV() {
       div.className = 'result-item';
       div.innerHTML = `
         <p><strong><a href="${item.bandlink}" target="_blank">${item.band}</a></strong></p>
-        <p><a href="${item.bandalbumlink}" target="_blank">${item.album}</a> | ${item.year}</p>
-        <p>${item.era} ${item.tag}</p>
+        <p><a href="${item.bandalbumlink}" target="_blank">${item.album}</a> ${item.year}</p>
+        <div class="meta-line">
+          <span>${item.tag}</span>
+          <span>${item.era}</span>
+        </div>
       `;
       results.appendChild(div);
     });
