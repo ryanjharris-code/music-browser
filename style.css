@@ -44,7 +44,10 @@ button:hover {
 .result-item p {
   margin: 0.2rem 0;
 }
-.meta-line, .result-item .year-line {
+.result-item p.year-line {
+  font-size: 0.7rem;
+}
+.meta-line {
   display: flex;
   justify-content: space-between;
   font-size: 0.7rem;
