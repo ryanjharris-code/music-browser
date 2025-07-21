@@ -11,7 +11,7 @@ h1 {
   font-size: 2.5rem;
 }
 .section-title {
-  font-size: 1.5rem;
+  font-size: 1.05rem;
   margin-top: 2rem;
 }
 .era-title {
@@ -44,7 +44,7 @@ button:hover {
 .result-item p {
   margin: 0.2rem 0;
 }
-.meta-line {
+.meta-line, .result-item .year-line {
   display: flex;
   justify-content: space-between;
   font-size: 0.7rem;
