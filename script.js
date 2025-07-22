@@ -13,16 +13,18 @@ async function loadCSV() {
     return obj;
   }).filter(item => item.genre && item.band);
 
-  const genres = [...new Set(items.map(item => item.genre))].sort();
-  const eras = [...new Set(items.map(item => item.era))].sort();
-
   const homeButtons = document.getElementById('home-buttons');
+  const eraTitle = document.querySelector(".era-title");
   const filterButtons = document.getElementById('filter-buttons');
   const subgenreButtons = document.getElementById('subgenre-buttons');
   const subgenre2Buttons = document.getElementById('subgenre2-buttons');
   const results = document.getElementById('results');
 
-  function clearFilters() {
+  const eras = [...new Set(items.map(i => i.era))].filter(Boolean).sort();
+  const genres = [...new Set(items.map(i => i.genre))].filter(Boolean).sort();
+
+  function clearAll() {
+    filterButtons.innerHTML = '';
     subgenreButtons.innerHTML = '';
     subgenre2Buttons.innerHTML = '';
     results.innerHTML = '';
@@ -45,48 +47,56 @@ async function loadCSV() {
     });
   }
 
-  genres.forEach(genre => {
-    const btn = document.createElement('button');
-    btn.textContent = genre;
-    btn.onclick = () => {
-      clearFilters();
-      const genreItems = items.filter(i => i.genre === genre);
-      const subgenres = [...new Set(genreItems.map(i => i.subgenre))].filter(Boolean).sort();
-      subgenres.forEach(sub => {
-        const sbtn = document.createElement('button');
-        sbtn.textContent = sub;
-        sbtn.onclick = () => {
-          const subItems = genreItems.filter(i => i.subgenre === sub);
-          const subgenre2s = [...new Set(subItems.map(i => i.subgenre2))].filter(Boolean).sort();
-          subgenre2Buttons.innerHTML = '';
-          subgenre2s.forEach(s2 => {
-            const s2btn = document.createElement('button');
-            s2btn.textContent = s2;
-            s2btn.onclick = () => {
-              const final = subItems.filter(i => i.subgenre2 === s2);
-              displayItems(final);
-            };
-            subgenre2Buttons.appendChild(s2btn);
-          });
-          displayItems(subItems);
-        };
-        subgenreButtons.appendChild(sbtn);
-      });
-      displayItems(genreItems);
-    };
-    homeButtons.appendChild(btn);
-  });
+  function setupGenreFlow(filteredItems) {
+    homeButtons.innerHTML = '';
+    const activeGenres = [...new Set(filteredItems.map(i => i.genre))].sort();
+    activeGenres.forEach(genre => {
+      const btn = document.createElement('button');
+      btn.textContent = genre;
+      btn.onclick = () => {
+        subgenreButtons.innerHTML = '';
+        subgenre2Buttons.innerHTML = '';
+        const genreItems = filteredItems.filter(i => i.genre === genre);
+        const subgenres = [...new Set(genreItems.map(i => i.subgenre))].filter(Boolean).sort();
+        subgenres.forEach(sub => {
+          const sbtn = document.createElement('button');
+          sbtn.textContent = sub;
+          sbtn.onclick = () => {
+            const subItems = genreItems.filter(i => i.subgenre === sub);
+            const subgenre2s = [...new Set(subItems.map(i => i.subgenre2))].filter(Boolean).sort();
+            subgenre2Buttons.innerHTML = '';
+            subgenre2s.forEach(s2 => {
+              const s2btn = document.createElement('button');
+              s2btn.textContent = s2;
+              s2btn.onclick = () => {
+                const final = subItems.filter(i => i.subgenre2 === s2);
+                displayItems(final);
+              };
+              subgenre2Buttons.appendChild(s2btn);
+            });
+            displayItems(subItems);
+          };
+          subgenreButtons.appendChild(sbtn);
+        });
+        displayItems(genreItems);
+      };
+      homeButtons.appendChild(btn);
+    });
+  }
 
+  // Filtering by ERA first
   eras.forEach(era => {
     const ebtn = document.createElement('button');
     ebtn.textContent = era;
     ebtn.onclick = () => {
-      clearFilters();
+      clearAll();
       const eraItems = items.filter(i => i.era === era);
-      displayItems(eraItems);
+      setupGenreFlow(eraItems);
     };
     filterButtons.appendChild(ebtn);
   });
-}
 
+  // Allow skipping ERA and start with genre directly
+  setupGenreFlow(items);
+}
 loadCSV();
