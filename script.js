@@ -1,4 +1,6 @@
 
+let filterStack = [];
+
 async function loadCSV() {
   const response = await fetch(CSV_URL);
   const data = await response.text();
@@ -14,14 +16,12 @@ async function loadCSV() {
   }).filter(item => item.genre && item.band);
 
   const homeButtons = document.getElementById('home-buttons');
-  const eraTitle = document.querySelector(".era-title");
   const filterButtons = document.getElementById('filter-buttons');
   const subgenreButtons = document.getElementById('subgenre-buttons');
   const subgenre2Buttons = document.getElementById('subgenre2-buttons');
   const results = document.getElementById('results');
 
   const eras = [...new Set(items.map(i => i.era))].filter(Boolean).sort();
-  const genres = [...new Set(items.map(i => i.genre))].filter(Boolean).sort();
 
   function clearAll() {
     filterButtons.innerHTML = '';
@@ -54,6 +54,7 @@ async function loadCSV() {
       const btn = document.createElement('button');
       btn.textContent = genre;
       btn.onclick = () => {
+        filterStack.push(() => setupGenreFlow(filteredItems));
         subgenreButtons.innerHTML = '';
         subgenre2Buttons.innerHTML = '';
         const genreItems = filteredItems.filter(i => i.genre === genre);
@@ -62,6 +63,7 @@ async function loadCSV() {
           const sbtn = document.createElement('button');
           sbtn.textContent = sub;
           sbtn.onclick = () => {
+            filterStack.push(() => displayItems(genreItems));
             const subItems = genreItems.filter(i => i.subgenre === sub);
             const subgenre2s = [...new Set(subItems.map(i => i.subgenre2))].filter(Boolean).sort();
             subgenre2Buttons.innerHTML = '';
@@ -69,6 +71,7 @@ async function loadCSV() {
               const s2btn = document.createElement('button');
               s2btn.textContent = s2;
               s2btn.onclick = () => {
+                filterStack.push(() => displayItems(subItems));
                 const final = subItems.filter(i => i.subgenre2 === s2);
                 displayItems(final);
               };
@@ -84,19 +87,26 @@ async function loadCSV() {
     });
   }
 
-  // Filtering by ERA first
   eras.forEach(era => {
     const ebtn = document.createElement('button');
     ebtn.textContent = era;
     ebtn.onclick = () => {
       clearAll();
       const eraItems = items.filter(i => i.era === era);
+      filterStack.push(() => setupGenreFlow(items));
       setupGenreFlow(eraItems);
     };
     filterButtons.appendChild(ebtn);
   });
 
-  // Allow skipping ERA and start with genre directly
   setupGenreFlow(items);
 }
+
+function goBack() {
+  if (filterStack.length > 0) {
+    const lastFn = filterStack.pop();
+    if (typeof lastFn === 'function') lastFn();
+  }
+}
+
 loadCSV();

@@ -11,11 +11,15 @@ h1 {
   font-size: 2.5rem;
 }
 .section-title {
-  font-size: 1.05rem;
+  font-size: 0.8rem;
   margin-top: 2rem;
+  text-transform: uppercase;
+  font-weight: bold;
 }
 .era-title {
-  font-size: 1.05rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: bold;
 }
 button {
   background: #1f1f1f;
@@ -58,4 +62,13 @@ a {
 }
 a:hover {
   text-decoration: underline;
+}
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.nav-buttons button {
+  font-size: 1.2rem;
+  padding: 0.3rem 0.7rem;
 }
